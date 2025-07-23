@@ -1,7 +1,6 @@
 package web
 
 import (
-	"net/http"
 	"github.com/zakharova-e/subscriptions-info/internal/subscriptions"
 	"net/http"
 )
