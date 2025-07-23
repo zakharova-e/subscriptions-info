@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  subscriptions:
+    build: ./
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgrespass
+      DB_NAME: postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5000:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespass
+      POSTGRES_DB: postgres
+    volumes:
+      - subscriptionsData:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER $$POSTGRES_DB"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+  pg_admin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: test@test.com
+      PGADMIN_DEFAULT_PASSWORD: postgres
+    ports:
+      - "8888:80"
+    depends_on:
+      - postgres
+    volumes:
+      - subscriptionsAdminData:/var/lib/pgadmin
+volumes:
+  subscriptionsData:
+  subscriptionsAdminData:
