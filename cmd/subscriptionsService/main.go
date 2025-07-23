@@ -1,10 +1,10 @@
 package main
 
-import(
+import (
 	_ "github.com/zakharova-e/subscriptions-info/internal/connections"
 	"github.com/zakharova-e/subscriptions-info/internal/web"
 )
 
-func main(){
+func main() {
 	web.Run()
 }

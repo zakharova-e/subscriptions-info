@@ -4,10 +4,10 @@ import (
 	"net/http"
 )
 
-func Run(){
+func Run() {
 	mux := RegisterRoutes()
-	err := http.ListenAndServe(":8080",mux)
-	if err!= nil{
+	err := http.ListenAndServe(":8080", mux)
+	if err != nil {
 		panic(err)
 	}
 }
