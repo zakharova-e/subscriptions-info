@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/google/uuid"
 	"io"
 	"log"
 	"net/http"
@@ -191,6 +192,8 @@ func SubscriptionListHandler(response http.ResponseWriter, request *http.Request
 //	@Produce	plain
 //	@Param		filterFrom	formData	string	true	"period from"
 //	@Param		filterTo	formData	string	true	"period to"
+//	@Param		userId	formData	string	false	"user id"
+//	@Param		serviceName	formData	string	false	"service name "
 //	@Success	200			{integer}	string	"sum is ready"
 //	@Failure	405			{string}	string	"error"
 //	@Failure	400			{string}	string	"error"
@@ -201,16 +204,11 @@ func SubscriptionSumHandler(response http.ResponseWriter, request *http.Request)
 		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "POST"})
 		return
 	}
-	filterFromParam := request.FormValue("filterFrom")
-	filterToParam := request.FormValue("filterTo")
-	if filterFromParam == "" || filterToParam == "" {
-		ResponseWithError(response, request, &InvalidParameterError{ParamName: "filter dates"})
-		return
+	filterFrom, filterTo, userId, serviceName, errRequest := getFilterParametersFromRequest(request)
+	if errRequest != nil {
+		ResponseWithError(response, request, errRequest)
 	}
-	filterFrom, _ := time.Parse("01-2006", filterFromParam)
-	filterTo, _ := time.Parse("01-2006", filterToParam)
-
-	sum, errSum := SubscriptionSum(filterFrom, filterTo, nil, nil)
+	sum, errSum := SubscriptionSum(*filterFrom, *filterTo, userId, serviceName)
 	if errSum != nil {
 		ResponseWithError(response, request, errSum)
 		return
@@ -255,4 +253,29 @@ func LogRequest(r *http.Request, data []byte, err error) {
 	} else {
 		log.Printf("%s: response [%s] %s %s with error %v\n", time.Now().Format("2006-01-02 15:04:05"), r.Method, r.RemoteAddr, r.RequestURI, err)
 	}
+}
+
+func getFilterParametersFromRequest(request *http.Request) (filterFrom *time.Time, filterTo *time.Time, userId *string, serviceName *string, err error) {
+	filterFromParam := request.FormValue("filterFrom")
+	filterToParam := request.FormValue("filterTo")
+	if filterFromParam == "" || filterToParam == "" {
+		return nil, nil, nil, nil, &InvalidParameterError{ParamName: "filter dates are empty"}
+	}
+	filterFromTime, errFrom := time.Parse("01-2006", filterFromParam)
+	filterToTime, errTo := time.Parse("01-2006", filterToParam)
+	if errFrom != nil || errTo != nil {
+		return nil, nil, nil, nil, &InvalidParameterError{ParamName: "cannot parse filter dates"}
+	}
+	filterFrom = &filterFromTime
+	filterToTime = filterToTime.AddDate(0, 1, -1)
+	filterTo = &filterToTime
+	userIdParam := request.FormValue("userId")
+	if err := uuid.Validate(userIdParam); err == nil {
+		userId = &userIdParam
+	}
+	serviceNameParam := request.FormValue("serviceName")
+	if len(serviceNameParam) > 0 {
+		serviceName = &serviceNameParam
+	}
+	return
 }

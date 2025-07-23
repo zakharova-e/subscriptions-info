@@ -87,6 +87,10 @@ paths:
           description: error
           schema:
             type: string
+        "404":
+          description: error
+          schema:
+            type: string
         "405":
           description: error
           schema:
@@ -104,7 +108,6 @@ paths:
       - description: page number
         in: query
         name: page
-        required: true
         type: integer
       produces:
       - application/json
@@ -143,6 +146,10 @@ paths:
           description: error
           schema:
             type: string
+        "404":
+          description: error
+          schema:
+            type: string
         "405":
           description: error
           schema:
@@ -168,6 +175,14 @@ paths:
         in: formData
         name: filterTo
         required: true
+        type: string
+      - description: user id
+        in: formData
+        name: userId
+        type: string
+      - description: 'service name '
+        in: formData
+        name: serviceName
         type: string
       produces:
       - text/plain
@@ -208,6 +223,10 @@ paths:
           schema:
             type: integer
         "400":
+          description: error
+          schema:
+            type: string
+        "404":
           description: error
           schema:
             type: string

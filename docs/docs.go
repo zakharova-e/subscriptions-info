@@ -97,6 +97,12 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "404": {
+                        "description": "error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "405": {
                         "description": "error",
                         "schema": {
@@ -126,8 +132,7 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "page number",
                         "name": "page",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -183,6 +188,12 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "404": {
+                        "description": "error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "405": {
                         "description": "error",
                         "schema": {
@@ -224,6 +235,18 @@ const docTemplate = `{
                         "name": "filterTo",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "userId",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "service name ",
+                        "name": "serviceName",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -282,6 +305,12 @@ const docTemplate = `{
                         }
                     },
                     "400": {
+                        "description": "error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
                         "description": "error",
                         "schema": {
                             "type": "string"

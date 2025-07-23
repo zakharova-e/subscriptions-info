@@ -66,7 +66,10 @@ func (s *Subscription) UnmarshalJSON(body []byte) error {
 	s.UserId = temp.UserId
 	s.StartDate, _ = time.Parse("01-2006", temp.StartDate)
 	if temp.FinishDate != "" {
-		finishDate, _ := time.Parse("01-2006", temp.FinishDate)
+		finishDate, errParse := time.Parse("01-2006", temp.FinishDate)
+		if errParse == nil {
+			finishDate = finishDate.AddDate(0, 1, -1)
+		}
 		s.FinishDate = sql.NullTime{Valid: true, Time: finishDate}
 	}
 	return nil

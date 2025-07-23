@@ -3,6 +3,7 @@ package subscriptions
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/zakharova-e/subscriptions-info/internal/config"
@@ -92,5 +93,27 @@ func SubscriptionList(page int) (*SubscriptionListPage, error) {
 }
 
 func SubscriptionSum(filterFrom time.Time, filterTo time.Time, userId *string, serviceName *string) (int, error) {
-	return 0, nil
+	params := []any{}
+	query := "SELECT sum(price) FROM public.subscription where start_date <= $1 and (finish_date>= $2 or finish_date is null)"
+	params = append(params, filterTo.Format("2006-01-02"), filterFrom.Format("2006-01-02"))
+	paramNum := 3
+	if userId != nil {
+		query = query + fmt.Sprintf("and user_id = $%d ", paramNum)
+		params = append(params, userId)
+		paramNum++
+	}
+	if serviceName != nil {
+		query = query + fmt.Sprintf("and service_name = $%d ", paramNum)
+		params = append(params, serviceName)
+		paramNum++
+	}
+	//more params?
+
+	row := connections.PGDatabase.QueryRow(query, params...)
+	var res int
+	err := row.Scan(&res)
+	if err != nil {
+		return 0, &DatabaseError{Err: err}
+	}
+	return res, nil
 }

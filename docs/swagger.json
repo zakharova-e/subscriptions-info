@@ -94,6 +94,12 @@
                             "type": "string"
                         }
                     },
+                    "404": {
+                        "description": "error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "405": {
                         "description": "error",
                         "schema": {
@@ -123,8 +129,7 @@
                         "type": "integer",
                         "description": "page number",
                         "name": "page",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -180,6 +185,12 @@
                             "type": "string"
                         }
                     },
+                    "404": {
+                        "description": "error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "405": {
                         "description": "error",
                         "schema": {
@@ -221,6 +232,18 @@
                         "name": "filterTo",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "userId",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "service name ",
+                        "name": "serviceName",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -279,6 +302,12 @@
                         }
                     },
                     "400": {
+                        "description": "error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
                         "description": "error",
                         "schema": {
                             "type": "string"
