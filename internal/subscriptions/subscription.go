@@ -10,12 +10,12 @@ import (
 )
 
 type Subscription struct {
-	Id          int32        `json:"" db:"id"`
-	ServiceName string       `json:"" db:"service_name"`
-	Price       int          `json:"" db:"price"`
-	UserId      string       `json:"" db:"user_id"`
-	StartDate   time.Time    `json:"" db:"start_date"`
-	FinishDate  sql.NullTime `json:"" db:"finish_date"`
+	Id          int32        `json:"id"`
+	ServiceName string       `json:"service_name"`
+	Price       int          `json:"price"`
+	UserId      string       `json:"user_id"`
+	StartDate   time.Time    `json:"start_date"`
+	FinishDate  sql.NullTime `json:"finish_date" swaggertype:"string,nullable"`
 }
 
 type SubscriptionListPage struct {
@@ -83,3 +83,4 @@ func (s Subscription) IsValid() error {
 	}
 	return nil
 }
+

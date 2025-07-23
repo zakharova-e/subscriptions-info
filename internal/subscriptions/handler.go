@@ -8,6 +8,18 @@ import (
 	"time"
 )
 
+// SubscriptionCreateHandler godoc
+//
+//	@Summary	record creation
+//	@Tags		subscriptions
+//	@Accept		json
+//	@Produce	plain
+//	@Param		item	body		Subscription	true	"item to add"
+//	@Success	200		{integer}	string			"created"
+//	@Failure	405		{string}	string			"error"
+//	@Failure	400		{string}	string			"error"
+//	@Failure	500		{string}	string			"error"
+//	@Router		/subscription/create [post]
 func SubscriptionCreateHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(response, "Only POST method is allowed! ", http.StatusMethodNotAllowed)
@@ -20,7 +32,7 @@ func SubscriptionCreateHandler(response http.ResponseWriter, request *http.Reque
 	}
 	var sbscr Subscription
 	errJ := json.Unmarshal(body, &sbscr)
-	if err != nil {
+	if errJ != nil {
 		http.Error(response, errJ.Error(), http.StatusBadRequest)
 		return
 	}
@@ -32,6 +44,17 @@ func SubscriptionCreateHandler(response http.ResponseWriter, request *http.Reque
 	response.Write([]byte(strconv.Itoa(int(*num))))
 }
 
+// SubscriptionReadHandlergodoc
+//
+//	@Summary	record reading
+//	@Tags		subscriptions
+//	@Produce	json
+//	@Param		rowId	query		integer			true	"record id"
+//	@Success	200		{object}	Subscription	"data found"
+//	@Failure	405		{string}	string			"error"
+//	@Failure	400		{string}	string			"error"
+//	@Failure	500		{string}	string			"error"
+//	@Router		/subscription/read [get]
 func SubscriptionReadHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		http.Error(response, "Only GET method is allowed! ", http.StatusMethodNotAllowed)
@@ -56,6 +79,17 @@ func SubscriptionReadHandler(response http.ResponseWriter, request *http.Request
 	response.Write(responseJson)
 }
 
+// SubscriptionUpdateHandler godoc
+//
+//	@Summary	record update
+//	@Tags		subscriptions
+//	@Accept		json
+//	@Param		item	body		Subscription	true	"item to update"
+//	@Success	200		{integer}	string			"updated"
+//	@Failure	405		{string}	string			"error"
+//	@Failure	400		{string}	string			"error"
+//	@Failure	500		{string}	string			"error"
+//	@Router		/subscription/update [put]
 func SubscriptionUpdateHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPut {
 		http.Error(response, "Only PUT method is allowed! ", http.StatusMethodNotAllowed)
@@ -81,6 +115,17 @@ func SubscriptionUpdateHandler(response http.ResponseWriter, request *http.Reque
 	response.Write(nil)
 }
 
+// SubscriptionDeleteHandler
+//
+//	@Summary	record deleting
+//	@Tags		subscriptions
+//	@Produce	json
+//	@Param		rowId	query		integer			true	"record id"
+//	@Success	200		{object}	Subscription	"data deleted"
+//	@Failure	405		{string}	string			"error"
+//	@Failure	400		{string}	string			"error"
+//	@Failure	500		{string}	string			"error"
+//	@Router		/subscription/delete [delete]
 func SubscriptionDeleteHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodDelete {
 		http.Error(response, "Only DELETE method is allowed! ", http.StatusMethodNotAllowed)
@@ -101,6 +146,16 @@ func SubscriptionDeleteHandler(response http.ResponseWriter, request *http.Reque
 	response.Write(nil)
 }
 
+// SubscriptionListHandler
+//
+//	@Summary	list of records
+//	@Tags		subscriptions
+//	@Produce	json
+//	@Param		page	query		integer					false	"page number"
+//	@Success	200		{object}	SubscriptionListPage	"loaded successfully"
+//	@Failure	405		{string}	string					"error"
+//	@Failure	500		{string}	string					"error"
+//	@Router		/subscription/list [get]
 func SubscriptionListHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		http.Error(response, "Only GET method is allowed! ", http.StatusMethodNotAllowed)
@@ -124,6 +179,19 @@ func SubscriptionListHandler(response http.ResponseWriter, request *http.Request
 	response.Write(jsonList)
 }
 
+// SubscriptionSumHandler godoc
+//
+//	@Summary	sum calculation
+//	@Tags		subscriptions
+//	@Accept		x-www-form-urlencoded
+//	@Produce	plain
+//	@Param		filterFrom	formData	string	true	"period from"
+//	@Param		filterTo	formData	string	true	"period to"
+//	@Success	200			{integer}	string	"sum is ready"
+//	@Failure	405			{string}	string	"error"
+//	@Failure	400			{string}	string	"error"
+//	@Failure	500			{string}	string	"error"
+//	@Router		/subscription/sum [post]
 func SubscriptionSumHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(response, "Only POST method is allowed! ", http.StatusMethodNotAllowed)

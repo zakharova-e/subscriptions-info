@@ -1,0 +1,227 @@
+basePath: /
+definitions:
+  subscriptions.Subscription:
+    properties:
+      finish_date:
+        type: string
+      id:
+        type: integer
+      price:
+        type: integer
+      service_name:
+        type: string
+      start_date:
+        type: string
+      user_id:
+        type: string
+    type: object
+  subscriptions.SubscriptionListPage:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/subscriptions.Subscription'
+        type: array
+      page:
+        type: integer
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Test challange
+  title: Subscriptions service
+  version: "1.0"
+paths:
+  /subscription/create:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: item to add
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/subscriptions.Subscription'
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: created
+          schema:
+            type: integer
+        "400":
+          description: error
+          schema:
+            type: string
+        "405":
+          description: error
+          schema:
+            type: string
+        "500":
+          description: error
+          schema:
+            type: string
+      summary: record creation
+      tags:
+      - subscriptions
+  /subscription/delete:
+    delete:
+      parameters:
+      - description: record id
+        in: query
+        name: rowId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: data deleted
+          schema:
+            $ref: '#/definitions/subscriptions.Subscription'
+        "400":
+          description: error
+          schema:
+            type: string
+        "405":
+          description: error
+          schema:
+            type: string
+        "500":
+          description: error
+          schema:
+            type: string
+      summary: record deleting
+      tags:
+      - subscriptions
+  /subscription/list:
+    get:
+      parameters:
+      - description: page number
+        in: query
+        name: page
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: loaded successfully
+          schema:
+            $ref: '#/definitions/subscriptions.SubscriptionListPage'
+        "405":
+          description: error
+          schema:
+            type: string
+        "500":
+          description: error
+          schema:
+            type: string
+      summary: list of records
+      tags:
+      - subscriptions
+  /subscription/read:
+    get:
+      parameters:
+      - description: record id
+        in: query
+        name: rowId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: data found
+          schema:
+            $ref: '#/definitions/subscriptions.Subscription'
+        "400":
+          description: error
+          schema:
+            type: string
+        "405":
+          description: error
+          schema:
+            type: string
+        "500":
+          description: error
+          schema:
+            type: string
+      summary: record reading
+      tags:
+      - subscriptions
+  /subscription/sum:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: period from
+        in: formData
+        name: filterFrom
+        required: true
+        type: string
+      - description: period to
+        in: formData
+        name: filterTo
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: sum is ready
+          schema:
+            type: integer
+        "400":
+          description: error
+          schema:
+            type: string
+        "405":
+          description: error
+          schema:
+            type: string
+        "500":
+          description: error
+          schema:
+            type: string
+      summary: sum calculation
+      tags:
+      - subscriptions
+  /subscription/update:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: item to update
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/subscriptions.Subscription'
+      responses:
+        "200":
+          description: updated
+          schema:
+            type: integer
+        "400":
+          description: error
+          schema:
+            type: string
+        "405":
+          description: error
+          schema:
+            type: string
+        "500":
+          description: error
+          schema:
+            type: string
+      summary: record update
+      tags:
+      - subscriptions
+schemes:
+- http
+swagger: "2.0"
