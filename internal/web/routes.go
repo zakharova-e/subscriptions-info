@@ -1,6 +1,7 @@
 package web
 
 import (
+	"net/http"
 	"github.com/zakharova-e/subscriptions-info/internal/subscriptions"
 	"net/http"
 )
@@ -15,3 +16,4 @@ func RegisterRoutes() *http.ServeMux {
 	mux.HandleFunc("/subscription/sum", subscriptions.SubscriptionSumHandler)
 	return mux
 }
+
