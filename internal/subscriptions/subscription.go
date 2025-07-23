@@ -33,7 +33,7 @@ func (s *Subscription) MarshalJSON() ([]byte, error) {
 		finishDateFormatted := s.FinishDate.Time.Format("01-2006")
 		finishDate = &finishDateFormatted
 	}
-	return json.Marshal(struct {
+	res, err := json.Marshal(struct {
 		Id          int32   `json:"id"`
 		ServiceName string  `json:"service_name"`
 		Price       int     `json:"price"`
@@ -41,6 +41,10 @@ func (s *Subscription) MarshalJSON() ([]byte, error) {
 		StartDate   string  `json:"start_date"`
 		FinishDate  *string `json:"finish_date,omitempty"`
 	}{s.Id, s.ServiceName, s.Price, s.UserId, s.StartDate.Format("01-2006"), finishDate})
+	if err != nil {
+		err = &JsonError{Err: err}
+	}
+	return res, err
 }
 
 // override json unmarshaling
@@ -54,7 +58,7 @@ func (s *Subscription) UnmarshalJSON(body []byte) error {
 		FinishDate  string `json:"finish_date"`
 	}
 	if err := json.Unmarshal(body, &temp); err != nil {
-		return err
+		return &JsonError{Err: err, Json: string(body)}
 	}
 	s.Id = temp.Id
 	s.ServiceName = temp.ServiceName
@@ -69,18 +73,21 @@ func (s *Subscription) UnmarshalJSON(body []byte) error {
 }
 
 func (s Subscription) IsValid() error {
+	var vErr ValidationError
 	if len(s.ServiceName) == 0 {
-		return errors.New("invalid service name")
+		vErr.Errors = append(vErr.Errors, errors.New("service name is empty"))
 	}
 	if err := uuid.Validate(s.UserId); err != nil {
-		return errors.New("invalid user id")
+		vErr.Errors = append(vErr.Errors, errors.New("user id must be uuid"))
 	}
 	if s.StartDate.Year() < 2020 {
-		return errors.New("invalid start date")
+		vErr.Errors = append(vErr.Errors, errors.New("incorrect date, years after 2020 accepted"))
 	}
 	if s.FinishDate.Valid && s.FinishDate.Time.Year() < 2020 {
-		return errors.New("invalid start date")
+		vErr.Errors = append(vErr.Errors, errors.New("incorrect date, years after 2020 accepted"))
 	}
-	return nil
+	if len(vErr.Errors) == 0 {
+		return nil
+	}
+	return &vErr
 }
-

@@ -15,4 +15,3 @@ func RegisterRoutes() *http.ServeMux {
 	mux.HandleFunc("/subscription/sum", subscriptions.SubscriptionSumHandler)
 	return mux
 }
-

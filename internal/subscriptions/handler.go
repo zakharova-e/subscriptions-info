@@ -2,6 +2,7 @@ package subscriptions
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -22,23 +23,23 @@ import (
 //	@Router		/subscription/create [post]
 func SubscriptionCreateHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
-		http.Error(response, "Only POST method is allowed! ", http.StatusMethodNotAllowed)
+		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "POST"})
 		return
 	}
-	body, err := io.ReadAll(request.Body)
-	if err != nil {
-		http.Error(response, err.Error(), http.StatusBadRequest)
+	body, errBody := io.ReadAll(request.Body)
+	if errBody != nil {
+		ResponseWithError(response, errBody)
 		return
 	}
 	var sbscr Subscription
-	errJ := json.Unmarshal(body, &sbscr)
-	if errJ != nil {
-		http.Error(response, errJ.Error(), http.StatusBadRequest)
+	errJson := json.Unmarshal(body, &sbscr)
+	if errJson != nil {
+		ResponseWithError(response, errJson)
 		return
 	}
-	num, errC := SubscriptionCreate(sbscr)
-	if errC != nil {
-		http.Error(response, errC.Error(), http.StatusInternalServerError)
+	num, errAdd := SubscriptionCreate(sbscr)
+	if errAdd != nil {
+		ResponseWithError(response, errAdd)
 		return
 	}
 	response.Write([]byte(strconv.Itoa(int(*num))))
@@ -51,29 +52,30 @@ func SubscriptionCreateHandler(response http.ResponseWriter, request *http.Reque
 //	@Produce	json
 //	@Param		rowId	query		integer			true	"record id"
 //	@Success	200		{object}	Subscription	"data found"
+//	@Failure	404		{string}	string			"error"
 //	@Failure	405		{string}	string			"error"
 //	@Failure	400		{string}	string			"error"
 //	@Failure	500		{string}	string			"error"
 //	@Router		/subscription/read [get]
 func SubscriptionReadHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
-		http.Error(response, "Only GET method is allowed! ", http.StatusMethodNotAllowed)
+		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "GET"})
 		return
 	}
 	sIDParam := request.URL.Query().Get("rowId")
-	sID, err := strconv.Atoi(sIDParam)
-	if err != nil || sID < 1 {
-		http.Error(response, "invalid data", http.StatusBadRequest)
+	sID, errParam := strconv.Atoi(sIDParam)
+	if errParam != nil || sID < 1 {
+		ResponseWithError(response, &InvalidParameterError{ParamName: "rowId"})
 		return
 	}
-	item, errR := SubscriptionRead(int32(sID))
-	if errR != nil {
-		http.Error(response, errR.Error(), http.StatusInternalServerError)
+	item, errRead := SubscriptionRead(int32(sID))
+	if errRead != nil {
+		ResponseWithError(response, errRead)
 		return
 	}
-	responseJson, errJ := json.Marshal(item)
-	if errJ != nil {
-		http.Error(response, errJ.Error(), http.StatusInternalServerError)
+	responseJson, errJson := json.Marshal(item)
+	if errJson != nil {
+		ResponseWithError(response, errJson)
 		return
 	}
 	response.Write(responseJson)
@@ -86,13 +88,14 @@ func SubscriptionReadHandler(response http.ResponseWriter, request *http.Request
 //	@Accept		json
 //	@Param		item	body		Subscription	true	"item to update"
 //	@Success	200		{integer}	string			"updated"
+//	@Failure	404		{string}	string			"error"
 //	@Failure	405		{string}	string			"error"
 //	@Failure	400		{string}	string			"error"
 //	@Failure	500		{string}	string			"error"
 //	@Router		/subscription/update [put]
 func SubscriptionUpdateHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPut {
-		http.Error(response, "Only PUT method is allowed! ", http.StatusMethodNotAllowed)
+		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "PUT"})
 		return
 	}
 	body, err := io.ReadAll(request.Body)
@@ -101,14 +104,14 @@ func SubscriptionUpdateHandler(response http.ResponseWriter, request *http.Reque
 		return
 	}
 	var sbscr Subscription
-	errJ := json.Unmarshal(body, &sbscr)
-	if err != nil {
-		http.Error(response, errJ.Error(), http.StatusBadRequest)
+	errJson := json.Unmarshal(body, &sbscr)
+	if errJson != nil {
+		ResponseWithError(response, errJson)
 		return
 	}
-	errU := SubscriptionUpdate(sbscr)
-	if errU != nil {
-		http.Error(response, errJ.Error(), http.StatusInternalServerError)
+	errUpdate := SubscriptionUpdate(sbscr)
+	if errUpdate != nil {
+		ResponseWithError(response, errUpdate)
 		return
 	}
 	response.WriteHeader(http.StatusOK)
@@ -122,24 +125,25 @@ func SubscriptionUpdateHandler(response http.ResponseWriter, request *http.Reque
 //	@Produce	json
 //	@Param		rowId	query		integer			true	"record id"
 //	@Success	200		{object}	Subscription	"data deleted"
+//	@Failure	404		{string}	string			"error"
 //	@Failure	405		{string}	string			"error"
 //	@Failure	400		{string}	string			"error"
 //	@Failure	500		{string}	string			"error"
 //	@Router		/subscription/delete [delete]
 func SubscriptionDeleteHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodDelete {
-		http.Error(response, "Only DELETE method is allowed! ", http.StatusMethodNotAllowed)
+		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "DELETE"})
 		return
 	}
 	sIDParam := request.URL.Query().Get("rowId")
-	sID, err := strconv.Atoi(sIDParam)
-	if err != nil || sID < 1 {
-		http.Error(response, "invalid data", http.StatusBadRequest)
+	sID, errParam := strconv.Atoi(sIDParam)
+	if errParam != nil || sID < 1 {
+		ResponseWithError(response, &InvalidParameterError{ParamName: "rowId"})
 		return
 	}
-	errD := SubscriptionDelete(int32(sID))
-	if errD != nil {
-		http.Error(response, errD.Error(), http.StatusInternalServerError)
+	errDel := SubscriptionDelete(int32(sID))
+	if errDel != nil {
+		ResponseWithError(response, errDel)
 		return
 	}
 	response.WriteHeader(http.StatusOK)
@@ -158,7 +162,7 @@ func SubscriptionDeleteHandler(response http.ResponseWriter, request *http.Reque
 //	@Router		/subscription/list [get]
 func SubscriptionListHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
-		http.Error(response, "Only GET method is allowed! ", http.StatusMethodNotAllowed)
+		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "GET"})
 		return
 	}
 	pageParam := request.URL.Query().Get("page")
@@ -166,14 +170,14 @@ func SubscriptionListHandler(response http.ResponseWriter, request *http.Request
 	if page < 1 {
 		page = 1
 	}
-	list, err := SubscriptionList(page)
-	if err != nil {
-		http.Error(response, err.Error(), http.StatusInternalServerError)
+	list, errList := SubscriptionList(page)
+	if errList != nil {
+		ResponseWithError(response, errList)
 		return
 	}
-	jsonList, errJ := json.Marshal(list)
-	if errJ != nil {
-		http.Error(response, errJ.Error(), http.StatusInternalServerError)
+	jsonList, errJson := json.Marshal(list)
+	if errJson != nil {
+		ResponseWithError(response, errJson)
 		return
 	}
 	response.Write(jsonList)
@@ -194,22 +198,37 @@ func SubscriptionListHandler(response http.ResponseWriter, request *http.Request
 //	@Router		/subscription/sum [post]
 func SubscriptionSumHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
-		http.Error(response, "Only POST method is allowed! ", http.StatusMethodNotAllowed)
+		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "POST"})
 		return
 	}
 	filterFromParam := request.FormValue("filterFrom")
 	filterToParam := request.FormValue("filterTo")
 	if filterFromParam == "" || filterToParam == "" {
-		http.Error(response, "invalid data", http.StatusBadRequest)
+		ResponseWithError(response, &InvalidParameterError{ParamName: "filter dates"})
 		return
 	}
 	filterFrom, _ := time.Parse("01-2006", filterFromParam)
 	filterTo, _ := time.Parse("01-2006", filterToParam)
 
-	sum, err := SubscriptionSum(filterFrom, filterTo, nil, nil)
-	if err != nil {
-		http.Error(response, err.Error(), http.StatusInternalServerError)
+	sum, errSum := SubscriptionSum(filterFrom, filterTo, nil, nil)
+	if errSum != nil {
+		ResponseWithError(response, errSum)
 		return
 	}
 	response.Write([]byte(strconv.Itoa(sum)))
+}
+
+func ResponseWithError(response http.ResponseWriter, err error) {
+	switch {
+	case errors.As(err, &ValidationError{}):
+	case errors.As(err, &JsonError{}):
+	case errors.As(err, &InvalidParameterError{}):
+		http.Error(response, err.Error(), http.StatusBadRequest)
+	case errors.As(err, &ResourceNotFoundError{}):
+		http.Error(response, err.Error(), http.StatusNotFound)
+	case errors.As(err, &MethodNotAllowedError{}):
+		http.Error(response, err.Error(), http.StatusMethodNotAllowed)
+	default:
+		http.Error(response, err.Error(), http.StatusInternalServerError)
+	}
 }
