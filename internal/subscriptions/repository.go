@@ -38,7 +38,7 @@ func SubscriptionRead(recordId int32) (*Subscription, error) {
 	)
 	err := row.Scan(&id, &serviceName, &price, &userId, &startDate, &finishDate)
 	if err != nil {
-		return nil,&DatabaseError{Err: err}
+		return nil, &DatabaseError{Err: err}
 	}
 	return &Subscription{id, serviceName, price, userId, startDate, finishDate}, nil
 }

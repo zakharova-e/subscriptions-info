@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -24,26 +25,26 @@ import (
 //	@Router		/subscription/create [post]
 func SubscriptionCreateHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
-		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "POST"})
+		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "POST"})
 		return
 	}
 	body, errBody := io.ReadAll(request.Body)
 	if errBody != nil {
-		ResponseWithError(response, errBody)
+		ResponseWithError(response, request, errBody)
 		return
 	}
 	var sbscr Subscription
 	errJson := json.Unmarshal(body, &sbscr)
 	if errJson != nil {
-		ResponseWithError(response, errJson)
+		ResponseWithError(response, request, errJson)
 		return
 	}
 	num, errAdd := SubscriptionCreate(sbscr)
 	if errAdd != nil {
-		ResponseWithError(response, errAdd)
+		ResponseWithError(response, request, errAdd)
 		return
 	}
-	response.Write([]byte(strconv.Itoa(int(*num))))
+	WriteResponse(response, request, []byte(strconv.Itoa(int(*num))))
 }
 
 // SubscriptionReadHandlergodoc
@@ -60,26 +61,26 @@ func SubscriptionCreateHandler(response http.ResponseWriter, request *http.Reque
 //	@Router		/subscription/read [get]
 func SubscriptionReadHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
-		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "GET"})
+		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "GET"})
 		return
 	}
 	sIDParam := request.URL.Query().Get("rowId")
 	sID, errParam := strconv.Atoi(sIDParam)
 	if errParam != nil || sID < 1 {
-		ResponseWithError(response, &InvalidParameterError{ParamName: "rowId"})
+		ResponseWithError(response, request, &InvalidParameterError{ParamName: "rowId"})
 		return
 	}
 	item, errRead := SubscriptionRead(int32(sID))
 	if errRead != nil {
-		ResponseWithError(response, errRead)
+		ResponseWithError(response, request, errRead)
 		return
 	}
 	responseJson, errJson := json.Marshal(item)
 	if errJson != nil {
-		ResponseWithError(response, errJson)
+		ResponseWithError(response, request, errJson)
 		return
 	}
-	response.Write(responseJson)
+	WriteResponse(response, request, responseJson)
 }
 
 // SubscriptionUpdateHandler godoc
@@ -96,7 +97,7 @@ func SubscriptionReadHandler(response http.ResponseWriter, request *http.Request
 //	@Router		/subscription/update [put]
 func SubscriptionUpdateHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPut {
-		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "PUT"})
+		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "PUT"})
 		return
 	}
 	body, err := io.ReadAll(request.Body)
@@ -107,16 +108,15 @@ func SubscriptionUpdateHandler(response http.ResponseWriter, request *http.Reque
 	var sbscr Subscription
 	errJson := json.Unmarshal(body, &sbscr)
 	if errJson != nil {
-		ResponseWithError(response, errJson)
+		ResponseWithError(response, request, errJson)
 		return
 	}
 	errUpdate := SubscriptionUpdate(sbscr)
 	if errUpdate != nil {
-		ResponseWithError(response, errUpdate)
+		ResponseWithError(response, request, errUpdate)
 		return
 	}
-	response.WriteHeader(http.StatusOK)
-	response.Write(nil)
+	WriteResponse(response, request, nil)
 }
 
 // SubscriptionDeleteHandler
@@ -133,22 +133,21 @@ func SubscriptionUpdateHandler(response http.ResponseWriter, request *http.Reque
 //	@Router		/subscription/delete [delete]
 func SubscriptionDeleteHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodDelete {
-		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "DELETE"})
+		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "DELETE"})
 		return
 	}
 	sIDParam := request.URL.Query().Get("rowId")
 	sID, errParam := strconv.Atoi(sIDParam)
 	if errParam != nil || sID < 1 {
-		ResponseWithError(response, &InvalidParameterError{ParamName: "rowId"})
+		ResponseWithError(response, request, &InvalidParameterError{ParamName: "rowId"})
 		return
 	}
 	errDel := SubscriptionDelete(int32(sID))
 	if errDel != nil {
-		ResponseWithError(response, errDel)
+		ResponseWithError(response, request, errDel)
 		return
 	}
-	response.WriteHeader(http.StatusOK)
-	response.Write(nil)
+	WriteResponse(response, request, nil)
 }
 
 // SubscriptionListHandler
@@ -163,7 +162,7 @@ func SubscriptionDeleteHandler(response http.ResponseWriter, request *http.Reque
 //	@Router		/subscription/list [get]
 func SubscriptionListHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
-		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "GET"})
+		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "GET"})
 		return
 	}
 	pageParam := request.URL.Query().Get("page")
@@ -173,15 +172,15 @@ func SubscriptionListHandler(response http.ResponseWriter, request *http.Request
 	}
 	list, errList := SubscriptionList(page)
 	if errList != nil {
-		ResponseWithError(response, errList)
+		ResponseWithError(response, request, errList)
 		return
 	}
 	jsonList, errJson := json.Marshal(list)
 	if errJson != nil {
-		ResponseWithError(response, errJson)
+		ResponseWithError(response, request, errJson)
 		return
 	}
-	response.Write(jsonList)
+	WriteResponse(response, request, jsonList)
 }
 
 // SubscriptionSumHandler godoc
@@ -199,13 +198,13 @@ func SubscriptionListHandler(response http.ResponseWriter, request *http.Request
 //	@Router		/subscription/sum [post]
 func SubscriptionSumHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
-		ResponseWithError(response, &MethodNotAllowedError{RequiredMethod: "POST"})
+		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "POST"})
 		return
 	}
 	filterFromParam := request.FormValue("filterFrom")
 	filterToParam := request.FormValue("filterTo")
 	if filterFromParam == "" || filterToParam == "" {
-		ResponseWithError(response, &InvalidParameterError{ParamName: "filter dates"})
+		ResponseWithError(response, request, &InvalidParameterError{ParamName: "filter dates"})
 		return
 	}
 	filterFrom, _ := time.Parse("01-2006", filterFromParam)
@@ -213,18 +212,18 @@ func SubscriptionSumHandler(response http.ResponseWriter, request *http.Request)
 
 	sum, errSum := SubscriptionSum(filterFrom, filterTo, nil, nil)
 	if errSum != nil {
-		ResponseWithError(response, errSum)
+		ResponseWithError(response, request, errSum)
 		return
 	}
-	response.Write([]byte(strconv.Itoa(sum)))
+	WriteResponse(response, request, []byte(strconv.Itoa(sum)))
 }
 
-func ResponseWithError(response http.ResponseWriter, err error) {
+func ResponseWithError(response http.ResponseWriter, request *http.Request, err error) {
 	var (
-		valErr *ValidationError
-		jsonErr *JsonError
-		paramErr *InvalidParameterError
-		notFoundErr *ResourceNotFoundError
+		valErr         *ValidationError
+		jsonErr        *JsonError
+		paramErr       *InvalidParameterError
+		notFoundErr    *ResourceNotFoundError
 		wrongMethodErr *MethodNotAllowedError
 	)
 	switch {
@@ -240,5 +239,20 @@ func ResponseWithError(response http.ResponseWriter, err error) {
 		http.Error(response, err.Error(), http.StatusNotFound)
 	default:
 		http.Error(response, err.Error(), http.StatusInternalServerError)
+	}
+	LogRequest(request, nil, err)
+}
+
+func WriteResponse(response http.ResponseWriter, request *http.Request, data []byte) {
+	response.WriteHeader(http.StatusOK)
+	_, _ = response.Write(data)
+	LogRequest(request, data, nil)
+}
+
+func LogRequest(r *http.Request, data []byte, err error) {
+	if err == nil {
+		log.Printf("%s: response [%s] %s %s with data %s\n", time.Now().Format("2006-01-02 15:04:05"), r.Method, r.RemoteAddr, r.RequestURI, data)
+	} else {
+		log.Printf("%s: response [%s] %s %s with error %v\n", time.Now().Format("2006-01-02 15:04:05"), r.Method, r.RemoteAddr, r.RequestURI, err)
 	}
 }
