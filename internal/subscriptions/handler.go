@@ -1,6 +1,7 @@
 package subscriptions
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
@@ -219,15 +220,24 @@ func SubscriptionSumHandler(response http.ResponseWriter, request *http.Request)
 }
 
 func ResponseWithError(response http.ResponseWriter, err error) {
+	var (
+		valErr *ValidationError
+		jsonErr *JsonError
+		paramErr *InvalidParameterError
+		notFoundErr *ResourceNotFoundError
+		wrongMethodErr *MethodNotAllowedError
+	)
 	switch {
-	case errors.As(err, &ValidationError{}):
-	case errors.As(err, &JsonError{}):
-	case errors.As(err, &InvalidParameterError{}):
+	case errors.As(err, &valErr):
+	case errors.As(err, &jsonErr):
+	case errors.As(err, &paramErr):
 		http.Error(response, err.Error(), http.StatusBadRequest)
-	case errors.As(err, &ResourceNotFoundError{}):
+	case errors.As(err, &notFoundErr):
 		http.Error(response, err.Error(), http.StatusNotFound)
-	case errors.As(err, &MethodNotAllowedError{}):
+	case errors.As(err, &wrongMethodErr):
 		http.Error(response, err.Error(), http.StatusMethodNotAllowed)
+	case errors.Is(err, sql.ErrNoRows):
+		http.Error(response, err.Error(), http.StatusNotFound)
 	default:
 		http.Error(response, err.Error(), http.StatusInternalServerError)
 	}

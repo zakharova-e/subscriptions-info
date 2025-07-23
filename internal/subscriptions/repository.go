@@ -18,9 +18,9 @@ func SubscriptionCreate(item Subscription) (*int32, error) {
 	var num int32
 	err := row.Scan(&num)
 	if err != nil {
-		err = &DatabaseError{Err: err}
+		return nil, &DatabaseError{Err: err}
 	}
-	return &num, err
+	return &num, nil
 }
 
 func SubscriptionRead(recordId int32) (*Subscription, error) {
@@ -38,9 +38,9 @@ func SubscriptionRead(recordId int32) (*Subscription, error) {
 	)
 	err := row.Scan(&id, &serviceName, &price, &userId, &startDate, &finishDate)
 	if err != nil {
-		err = &DatabaseError{Err: err}
+		return nil,&DatabaseError{Err: err}
 	}
-	return &Subscription{id, serviceName, price, userId, startDate, finishDate}, err
+	return &Subscription{id, serviceName, price, userId, startDate, finishDate}, nil
 }
 
 func SubscriptionUpdate(item Subscription) error {
@@ -53,9 +53,9 @@ func SubscriptionUpdate(item Subscription) error {
 	query := "update subscription set service_name = $1, price = $2, user_id = $3, start_date = $4, finish_date = $5 where id = $6 "
 	_, err := connections.PGDatabase.Exec(query, item.ServiceName, item.Price, item.UserId, item.StartDate, item.FinishDate, item.Id)
 	if err != nil {
-		err = &DatabaseError{Err: err}
+		return &DatabaseError{Err: err}
 	}
-	return err
+	return nil
 }
 
 func SubscriptionDelete(recordId int32) error {
@@ -65,9 +65,9 @@ func SubscriptionDelete(recordId int32) error {
 	query := "delete from subscription where id = $1"
 	_, err := connections.PGDatabase.Exec(query, recordId)
 	if err != nil {
-		err = &DatabaseError{Err: err}
+		return &DatabaseError{Err: err}
 	}
-	return err
+	return nil
 }
 
 func SubscriptionList(page int) (*SubscriptionListPage, error) {
