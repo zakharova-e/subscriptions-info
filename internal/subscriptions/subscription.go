@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/zakharova-e/subscriptions-info/internal/subscriptions/models"
 )
 
 type Subscription struct {
@@ -42,7 +43,7 @@ func (s *Subscription) MarshalJSON() ([]byte, error) {
 		FinishDate  *string `json:"finish_date,omitempty"`
 	}{s.Id, s.ServiceName, s.Price, s.UserId, s.StartDate.Format("01-2006"), finishDate})
 	if err != nil {
-		err = &JsonError{Err: err}
+		err = &models.JsonError{Err: err}
 	}
 	return res, err
 }
@@ -58,7 +59,7 @@ func (s *Subscription) UnmarshalJSON(body []byte) error {
 		FinishDate  string `json:"finish_date"`
 	}
 	if err := json.Unmarshal(body, &temp); err != nil {
-		return &JsonError{Err: err, Json: string(body)}
+		return &models.JsonError{Err: err, Json: string(body)}
 	}
 	s.Id = temp.Id
 	s.ServiceName = temp.ServiceName
@@ -76,7 +77,7 @@ func (s *Subscription) UnmarshalJSON(body []byte) error {
 }
 
 func (s Subscription) IsValid() error {
-	var vErr ValidationError
+	var vErr models.ValidationError
 	if len(s.ServiceName) == 0 {
 		vErr.Errors = append(vErr.Errors, errors.New("service name is empty"))
 	}

@@ -1,4 +1,4 @@
-package subscriptions
+package models
 
 import (
 	"errors"
@@ -26,7 +26,7 @@ type ResourceNotFoundError struct {
 }
 
 func (err *ResourceNotFoundError) Error() string {
-	return fmt.Sprintf("recource not found %v", err.Err)
+	return fmt.Sprintf("resource not found: %v", err.Err)
 }
 func (err *ResourceNotFoundError) Unwrap() error {
 	return err.Err

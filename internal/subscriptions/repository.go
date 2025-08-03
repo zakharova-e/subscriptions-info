@@ -9,6 +9,7 @@ import (
 
 	"github.com/zakharova-e/subscriptions-info/internal/config"
 	"github.com/zakharova-e/subscriptions-info/internal/connections"
+	"github.com/zakharova-e/subscriptions-info/internal/subscriptions/models"
 )
 
 func SubscriptionCreate(item Subscription) (*int32, error) {
@@ -20,14 +21,14 @@ func SubscriptionCreate(item Subscription) (*int32, error) {
 	var num int32
 	err := row.Scan(&num)
 	if err != nil {
-		return nil, &DatabaseError{Err: err}
+		return nil, &models.DatabaseError{Err: err}
 	}
 	return &num, nil
 }
 
 func SubscriptionRead(recordId int32) (*Subscription, error) {
 	if recordId < 1 {
-		return nil, &InvalidParameterError{ParamName: "recordId"}
+		return nil, &models.InvalidParameterError{ParamName: "recordId"}
 	}
 	query := "SELECT id,service_name, price,user_id,start_date,finish_date FROM subscription WHERE id = $1"
 	row := connections.PGDatabase.QueryRow(query, recordId)
@@ -40,7 +41,7 @@ func SubscriptionRead(recordId int32) (*Subscription, error) {
 	)
 	err := row.Scan(&id, &serviceName, &price, &userId, &startDate, &finishDate)
 	if err != nil {
-		return nil, &DatabaseError{Err: err}
+		return nil, &models.DatabaseError{Err: err}
 	}
 	return &Subscription{id, serviceName, price, userId, startDate, finishDate}, nil
 }
@@ -50,24 +51,24 @@ func SubscriptionUpdate(item Subscription) error {
 		return errValid
 	}
 	if item.Id < 1 {
-		return &ValidationError{Errors: []error{errors.New("invalid item id")}}
+		return &models.ValidationError{Errors: []error{errors.New("invalid item id")}}
 	}
 	query := "UPDATE subscription SET service_name = $1, price = $2, user_id = $3, start_date = $4, finish_date = $5 WHERE id = $6 "
 	_, err := connections.PGDatabase.Exec(query, item.ServiceName, item.Price, item.UserId, item.StartDate, item.FinishDate, item.Id)
 	if err != nil {
-		return &DatabaseError{Err: err}
+		return &models.DatabaseError{Err: err}
 	}
 	return nil
 }
 
 func SubscriptionDelete(recordId int32) error {
 	if recordId < 1 {
-		return &InvalidParameterError{ParamName: "recordId"}
+		return &models.InvalidParameterError{ParamName: "recordId"}
 	}
 	query := "DELETE FROM subscription WHERE id = $1"
 	_, err := connections.PGDatabase.Exec(query, recordId)
 	if err != nil {
-		return &DatabaseError{Err: err}
+		return &models.DatabaseError{Err: err}
 	}
 	return nil
 }
@@ -77,7 +78,7 @@ func SubscriptionList(page int) (*SubscriptionListPage, error) {
 	offset := (page - 1) * config.DefaultPageSize
 	rows, errQuery := connections.PGDatabase.Query(query, config.DefaultPageSize, offset)
 	if errQuery != nil {
-		return nil, &DatabaseError{Err: errQuery}
+		return nil, &models.DatabaseError{Err: errQuery}
 	}
 	defer rows.Close()
 	var list SubscriptionListPage
@@ -130,7 +131,7 @@ func SubscriptionSum(filterFrom time.Time, filterTo time.Time, userId *string, s
 	var res int
 	err := row.Scan(&res)
 	if err != nil {
-		return 0, &DatabaseError{Err: err}
+		return 0, &models.DatabaseError{Err: err}
 	}
 	return res, nil
 }

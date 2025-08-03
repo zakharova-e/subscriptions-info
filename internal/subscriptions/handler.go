@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/zakharova-e/subscriptions-info/internal/subscriptions/models"
 )
 
 // SubscriptionCreateHandler godoc
@@ -26,7 +28,7 @@ import (
 //	@Router		/subscription/create [post]
 func SubscriptionCreateHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
-		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "POST"})
+		ResponseWithError(response, request, &models.MethodNotAllowedError{RequiredMethod: "POST"})
 		return
 	}
 	body, errBody := io.ReadAll(request.Body)
@@ -62,13 +64,13 @@ func SubscriptionCreateHandler(response http.ResponseWriter, request *http.Reque
 //	@Router		/subscription/read [get]
 func SubscriptionReadHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
-		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "GET"})
+		ResponseWithError(response, request, &models.MethodNotAllowedError{RequiredMethod: "GET"})
 		return
 	}
 	sIDParam := request.URL.Query().Get("rowId")
 	sID, errParam := strconv.Atoi(sIDParam)
 	if errParam != nil || sID < 1 {
-		ResponseWithError(response, request, &InvalidParameterError{ParamName: "rowId"})
+		ResponseWithError(response, request, &models.InvalidParameterError{ParamName: "rowId"})
 		return
 	}
 	item, errRead := SubscriptionRead(int32(sID))
@@ -98,7 +100,7 @@ func SubscriptionReadHandler(response http.ResponseWriter, request *http.Request
 //	@Router		/subscription/update [put]
 func SubscriptionUpdateHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPut {
-		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "PUT"})
+		ResponseWithError(response, request, &models.MethodNotAllowedError{RequiredMethod: "PUT"})
 		return
 	}
 	body, err := io.ReadAll(request.Body)
@@ -134,13 +136,13 @@ func SubscriptionUpdateHandler(response http.ResponseWriter, request *http.Reque
 //	@Router		/subscription/delete [delete]
 func SubscriptionDeleteHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodDelete {
-		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "DELETE"})
+		ResponseWithError(response, request, &models.MethodNotAllowedError{RequiredMethod: "DELETE"})
 		return
 	}
 	sIDParam := request.URL.Query().Get("rowId")
 	sID, errParam := strconv.Atoi(sIDParam)
 	if errParam != nil || sID < 1 {
-		ResponseWithError(response, request, &InvalidParameterError{ParamName: "rowId"})
+		ResponseWithError(response, request, &models.InvalidParameterError{ParamName: "rowId"})
 		return
 	}
 	errDel := SubscriptionDelete(int32(sID))
@@ -163,7 +165,7 @@ func SubscriptionDeleteHandler(response http.ResponseWriter, request *http.Reque
 //	@Router		/subscription/list [get]
 func SubscriptionListHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
-		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "GET"})
+		ResponseWithError(response, request, &models.MethodNotAllowedError{RequiredMethod: "GET"})
 		return
 	}
 	pageParam := request.URL.Query().Get("page")
@@ -201,7 +203,7 @@ func SubscriptionListHandler(response http.ResponseWriter, request *http.Request
 //	@Router		/subscription/sum [post]
 func SubscriptionSumHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
-		ResponseWithError(response, request, &MethodNotAllowedError{RequiredMethod: "POST"})
+		ResponseWithError(response, request, &models.MethodNotAllowedError{RequiredMethod: "POST"})
 		return
 	}
 	filterFrom, filterTo, userId, serviceName, errRequest := getFilterParametersFromRequest(request)
@@ -218,11 +220,11 @@ func SubscriptionSumHandler(response http.ResponseWriter, request *http.Request)
 
 func ResponseWithError(response http.ResponseWriter, request *http.Request, err error) {
 	var (
-		valErr         *ValidationError
-		jsonErr        *JsonError
-		paramErr       *InvalidParameterError
-		notFoundErr    *ResourceNotFoundError
-		wrongMethodErr *MethodNotAllowedError
+		valErr         *models.ValidationError
+		jsonErr        *models.JsonError
+		paramErr       *models.InvalidParameterError
+		notFoundErr    *models.ResourceNotFoundError
+		wrongMethodErr *models.MethodNotAllowedError
 	)
 	switch {
 	case errors.As(err, &valErr):
@@ -259,12 +261,12 @@ func getFilterParametersFromRequest(request *http.Request) (filterFrom *time.Tim
 	filterFromParam := request.FormValue("filterFrom")
 	filterToParam := request.FormValue("filterTo")
 	if filterFromParam == "" || filterToParam == "" {
-		return nil, nil, nil, nil, &InvalidParameterError{ParamName: "filter dates are empty"}
+		return nil, nil, nil, nil, &models.InvalidParameterError{ParamName: "filter dates are empty"}
 	}
 	filterFromTime, errFrom := time.Parse("01-2006", filterFromParam)
 	filterToTime, errTo := time.Parse("01-2006", filterToParam)
 	if errFrom != nil || errTo != nil {
-		return nil, nil, nil, nil, &InvalidParameterError{ParamName: "cannot parse filter dates"}
+		return nil, nil, nil, nil, &models.InvalidParameterError{ParamName: "cannot parse filter dates"}
 	}
 	filterFrom = &filterFromTime
 	filterToTime = filterToTime.AddDate(0, 1, -1)
